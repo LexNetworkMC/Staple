@@ -21,38 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.lexteam.minecraft.staple;
+package xyz.lexteam.minecraft.staple.db;
 
-import com.google.gson.Gson;
-import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.service.economy.EconomyService;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 import xyz.lexteam.minecraft.staple.data.Configuration;
-import xyz.lexteam.minecraft.staple.service.StapleEconomyService;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.nio.file.Path;
+public final class Database {
 
-@Plugin(id = "staple", name = "Staple")
-public final class StaplePlugin {
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDatabase;
 
-    @Inject private Logger logger;
-    @Inject
-    @ConfigDir(sharedRoot = false)
-    private Path configDir;
+    public Database(Configuration configuration) {
+        MongoClientURI clientURI = new MongoClientURI(configuration.getDatabase().getUri());
+        this.mongoClient = new MongoClient(clientURI);
+        this.mongoDatabase = this.mongoClient.getDatabase(clientURI.getDatabase());
+    }
 
-    @Listener
-    public void onGamePreInitialization(GamePreInitializationEvent event) throws FileNotFoundException {
-        Configuration configuration = new Gson().fromJson(
-                new FileReader(new File(configDir.toFile(), "config.json")), Configuration.class);
+    public MongoClient getMongoClient() {
+        return this.mongoClient;
+    }
 
-        Sponge.getServiceManager().setProvider(this, EconomyService.class, new StapleEconomyService(configuration));
+    public MongoDatabase getMongoDatabase() {
+        return this.mongoDatabase;
     }
 }

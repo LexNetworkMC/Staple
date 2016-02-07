@@ -21,38 +21,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.lexteam.minecraft.staple;
+package xyz.lexteam.minecraft.staple.service;
 
-import com.google.gson.Gson;
-import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.config.ConfigDir;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
-import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.service.economy.EconomyService;
+import org.spongepowered.api.service.economy.Currency;
+import org.spongepowered.api.text.Text;
 import xyz.lexteam.minecraft.staple.data.Configuration;
-import xyz.lexteam.minecraft.staple.service.StapleEconomyService;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.nio.file.Path;
+import java.math.BigDecimal;
 
-@Plugin(id = "staple", name = "Staple")
-public final class StaplePlugin {
+public class StapleCurrency implements Currency {
 
-    @Inject private Logger logger;
-    @Inject
-    @ConfigDir(sharedRoot = false)
-    private Path configDir;
+    private final Configuration.Currency currency;
 
-    @Listener
-    public void onGamePreInitialization(GamePreInitializationEvent event) throws FileNotFoundException {
-        Configuration configuration = new Gson().fromJson(
-                new FileReader(new File(configDir.toFile(), "config.json")), Configuration.class);
+    public StapleCurrency(Configuration.Currency currency) {
+        this.currency = currency;
+    }
 
-        Sponge.getServiceManager().setProvider(this, EconomyService.class, new StapleEconomyService(configuration));
+    @Override
+    public Text getDisplayName() {
+        return Text.of(this.currency.getDisplayName());
+    }
+
+    @Override
+    public Text getPluralDisplayName() {
+        return Text.of(this.currency.getPluralDisplayName());
+    }
+
+    @Override
+    public Text getSymbol() {
+        return Text.of(this.currency.getSymbol());
+    }
+
+    @Override
+    public Text format(BigDecimal amount, int numFractionDigits) {
+        return null;
+    }
+
+    @Override
+    public int getDefaultFractionDigits() {
+        return 2;
+    }
+
+    @Override
+    public boolean isDefault() {
+        return this.currency.isDefault();
     }
 }
